@@ -1,0 +1,18 @@
+@use './ui/_ui-elements.scss';
+
+:root {
+  --surface: #f6f6f7;
+  --title: #9aa0a6;
+  --grid: #e6e8ea;
+  --label-bg: #f2f3f4;
+  --label-tx: #8a8f96;
+  --allday-bg: #b6b9be;
+  --allday-bg-on: #7c8188;
+  --block: #c9cdd2;
+  --btn-disabled-bg: #c9cbce;
+  --btn-active-bg: #8e9094;
+
+  --label-width: 56px;
+  --allday-width: 46px;
+  --row-height: 38px;
+}
