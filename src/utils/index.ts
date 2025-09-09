@@ -1,11 +1,7 @@
 import type { Reactive } from 'vue';
-import type { Day, DayKey, Interval, ScheduleValue } from '../types';
+import type { Day, Grid, Interval, ScheduleValue } from '../types';
 
-export function applyJson(
-  value: ScheduleValue,
-  days: Day[],
-  grid: Reactive<Record<DayKey, boolean[]>>,
-): void {
+export function applyJson(value: ScheduleValue, days: Day[], grid: Reactive<Grid>): void {
   for (const day of days) {
     grid[day.key].fill(false);
     const intervals = value[day.key] || [];
@@ -19,7 +15,7 @@ export function applyJson(
   }
 }
 
-export function buildJson(days: Day[], grid: Reactive<Record<DayKey, boolean[]>>): ScheduleValue {
+export function buildJson(days: Day[], grid: Reactive<Grid>): ScheduleValue {
   const result = {} as ScheduleValue;
   for (const day of days) {
     const arr: Interval[] = [];

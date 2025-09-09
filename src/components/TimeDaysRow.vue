@@ -9,7 +9,7 @@
       type="button"
       class="days-row__allday"
       :class="{ checked: checked }"
-      @click="$emit('toggle-all-day', day.key)">
+      @click="toggleAllDay(day.key)">
       <svg
         class="days-row__allday-check"
         viewBox="0 0 20 20"
@@ -24,23 +24,23 @@
 
     <div
       class="days-row__track"
-      @mouseleave="$emit('leave-track', day.key)">
+      @mouseleave="leaveTrack(day.key)">
       <div class="days-row__track-interactive">
         <div
           v-for="h in 24"
           :key="h"
           class="days-row__track-cell"
           :class="{ iselected: grid[h - 1] }"
-          @mousedown.left="$emit('cell-down', day.key, h - 1)"
-          @mouseover="$emit('cell-over', day.key, h - 1)"
-          @click.prevent="$emit('cell-click', day.key, h - 1)"></div>
+          @mousedown.left="cellDown(day.key, h - 1)"
+          @mouseover="cellOver(day.key, h - 1)"
+          @click.prevent="cellClick(day.key, h - 1)"></div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { Day } from '@/types';
+import type { Day, DayKey } from '@/types';
 import { computed } from 'vue';
 
 const props = defineProps<{
@@ -48,9 +48,37 @@ const props = defineProps<{
   grid: boolean[];
 }>();
 
+const emit = defineEmits<{
+  (e: 'toggle-all-day', dayKey: DayKey): void;
+  (e: 'leave-track', dayKey: DayKey): void;
+  (e: 'cell-down', dayKey: DayKey, hour: number): void;
+  (e: 'cell-over', dayKey: DayKey, hour: number): void;
+  (e: 'cell-click', dayKey: DayKey, hour: number): void;
+}>();
+
 const checked = computed(() => {
   return props.grid.every(Boolean);
 });
+
+function toggleAllDay(dayKey: DayKey) {
+  emit('toggle-all-day', dayKey);
+}
+
+function leaveTrack(dayKey: DayKey) {
+  emit('leave-track', dayKey);
+}
+
+function cellDown(dayKey: DayKey, hour: number) {
+  emit('cell-down', dayKey, hour);
+}
+
+function cellOver(dayKey: DayKey, hour: number) {
+  emit('cell-over', dayKey, hour);
+}
+
+function cellClick(dayKey: DayKey, hour: number) {
+  emit('cell-click', dayKey, hour);
+}
 </script>
 <style lang="scss" scoped>
 .days-row {

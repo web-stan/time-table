@@ -11,3 +11,4 @@ export interface Day {
 export interface TimeZone {
   label: string;
 }
+export type Grid = Record<DayKey, boolean[]>;

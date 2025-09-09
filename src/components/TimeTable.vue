@@ -27,14 +27,15 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, watch, onMounted, onBeforeUnmount, computed } from 'vue';
+import { reactive, ref, watch } from 'vue';
 
 import TimeLine from '@/components/TimeLine.vue';
 import TimeRowDays from '@/components/TimeDaysRow.vue';
 import TimeActions from '@/components/TimeActions.vue';
 
-import type { Day, DayKey, ScheduleValue, TimeZone } from '@/types';
+import type { Day, Grid, ScheduleValue, TimeZone } from '@/types';
 import { applyJson, buildJson } from '@/utils';
+import { useCellsFilling } from '@/composable/useCellsFilling';
 
 const props = defineProps<{ value: ScheduleValue }>();
 const emit = defineEmits<{ (e: 'save', payload: ScheduleValue): void }>();
@@ -62,16 +63,19 @@ const timeZones: TimeZone[] = [
   { label: '21:00' },
 ];
 
-const grid = reactive<Record<DayKey, boolean[]>>(
-  Object.fromEntries(days.map((d) => [d.key, Array(24).fill(false)])) as Record<DayKey, boolean[]>,
+const grid = reactive<Grid>(
+  Object.fromEntries(days.map((d) => [d.key, Array(24).fill(false)])) as Grid,
 );
 
-const isAllCellsEmpty = computed(() => Object.values(grid).every((arr) => arr.every((i) => !i)));
-
-//create composable
-let isMouseDown = false;
-let dragDay: DayKey | null = null;
-let lastHover: number | null = null;
+const {
+  onCellDown,
+  onCellOver,
+  onMouseUp,
+  onTrackLeave,
+  onCellClick,
+  toggleAllDay,
+  isAllCellsEmpty,
+} = useCellsFilling(grid);
 
 watch(
   () => data.value,
@@ -79,50 +83,6 @@ watch(
 
   { immediate: true, deep: true },
 );
-
-function onCellDown(day: DayKey, hour: number): void {
-  if (hour === 0 && !grid[day][0]) {
-    isMouseDown = true;
-    dragDay = day;
-    lastHover = 0;
-  }
-}
-
-function onCellOver(day: DayKey, hour: number): void {
-  if (!isMouseDown || dragDay !== day || lastHover === null) return;
-
-  if (hour > lastHover) {
-    for (let h = lastHover + 1; h <= hour; h++) grid[day][h] = true;
-  } else if (hour < lastHover) {
-    for (let h = hour; h <= lastHover; h++) grid[day][h] = false;
-  }
-
-  const left = Math.min(hour, lastHover);
-  const right = Math.max(hour, lastHover);
-
-  for (let h = left; h <= right; h++) {
-    grid[day][h] = hour > lastHover ? true : false;
-  }
-
-  lastHover = hour;
-}
-
-function onMouseUp(): void {
-  isMouseDown = false;
-  dragDay = null;
-  lastHover = null;
-}
-function onCellClick(day: DayKey, hour: number): void {
-  grid[day][hour] = !grid[day][hour];
-}
-function toggleAllDay(day: DayKey): void {
-  const all = grid[day].every(Boolean);
-  grid[day] = Array(24).fill(!all);
-}
-
-function onTrackLeave(day: DayKey): void {
-  if (isMouseDown && dragDay === day) onMouseUp();
-}
 
 function save(): void {
   const json = buildJson(days, grid);
@@ -133,9 +93,6 @@ function clearAll(): void {
   const json = buildJson(days, grid);
   emit('save', json);
 }
-
-onMounted(() => window.addEventListener('mouseup', onMouseUp));
-onBeforeUnmount(() => window.removeEventListener('mouseup', onMouseUp));
 </script>
 
 <style scoped lang="scss">
