@@ -1,18 +1,18 @@
 <template>
-  <section
-    class="time-table"
-    @mouseup="onMouseUp">
+  <section class="time-table">
     <h3 class="time-table__title">Select Time</h3>
 
     <TimeLine :time-zones />
 
-    <div class="time-table__body">
+    <div
+      class="time-table__body"
+      @mouseleave="onTrackLeave"
+      @mouseup="onMouseUp">
       <TimeRowDays
         v-for="day in days"
         :key="day.key"
         :day="day"
         :grid="grid[day.key]"
-        @leave-track="onTrackLeave"
         @cell-down="onCellDown"
         @cell-over="onCellOver"
         @cell-click="onCellClick"
@@ -27,7 +27,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, watch } from 'vue';
+import { reactive, shallowRef, watch } from 'vue';
 
 import TimeLine from '@/components/TimeLine.vue';
 import TimeRowDays from '@/components/TimeDaysRow.vue';
@@ -40,7 +40,7 @@ import { useCellsFilling } from '@/composable/useCellsFilling';
 const props = defineProps<{ value: ScheduleValue }>();
 const emit = defineEmits<{ (e: 'save', payload: ScheduleValue): void }>();
 
-const data = ref<ScheduleValue>(props.value);
+const data = shallowRef<ScheduleValue>(props.value);
 
 const days: Day[] = [
   { key: 'mo', label: 'MO' },
@@ -70,9 +70,9 @@ const grid = reactive<Grid>(
 const {
   onCellDown,
   onCellOver,
+  onCellClick,
   onMouseUp,
   onTrackLeave,
-  onCellClick,
   toggleAllDay,
   isAllCellsEmpty,
 } = useCellsFilling(grid);

@@ -22,63 +22,41 @@
       </svg>
     </button>
 
-    <div
-      class="days-row__track"
-      @mouseleave="leaveTrack(day.key)">
-      <div class="days-row__track-interactive">
+    <div class="days-row__track">
+      <div
+        class="days-row__track-interactive"
+        @mousedown.left="onRowMouseDown"
+        @mouseover="onRowMouseOver"
+        @click.prevent="onRowClick">
         <div
           v-for="h in 24"
           :key="h"
           class="days-row__track-cell"
           :class="{ iselected: grid[h - 1] }"
-          @mousedown.left="cellDown(day.key, h - 1)"
-          @mouseover="cellOver(day.key, h - 1)"
-          @click.prevent="cellClick(day.key, h - 1)"></div>
+          :data-hour="h - 1"
+          :data-day="day.key"></div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { Day, DayKey } from '@/types';
 import { computed } from 'vue';
+import type { Day, EmitDaysActions } from '@/types';
+import { useDaysActions } from '@/composable/useDaysActions';
 
 const props = defineProps<{
   day: Day;
   grid: boolean[];
 }>();
 
-const emit = defineEmits<{
-  (e: 'toggle-all-day', dayKey: DayKey): void;
-  (e: 'leave-track', dayKey: DayKey): void;
-  (e: 'cell-down', dayKey: DayKey, hour: number): void;
-  (e: 'cell-over', dayKey: DayKey, hour: number): void;
-  (e: 'cell-click', dayKey: DayKey, hour: number): void;
-}>();
+const emit = defineEmits<EmitDaysActions>();
+
+const { onRowMouseDown, onRowMouseOver, onRowClick, toggleAllDay } = useDaysActions(emit);
 
 const checked = computed(() => {
   return props.grid.every(Boolean);
 });
-
-function toggleAllDay(dayKey: DayKey) {
-  emit('toggle-all-day', dayKey);
-}
-
-function leaveTrack(dayKey: DayKey) {
-  emit('leave-track', dayKey);
-}
-
-function cellDown(dayKey: DayKey, hour: number) {
-  emit('cell-down', dayKey, hour);
-}
-
-function cellOver(dayKey: DayKey, hour: number) {
-  emit('cell-over', dayKey, hour);
-}
-
-function cellClick(dayKey: DayKey, hour: number) {
-  emit('cell-click', dayKey, hour);
-}
 </script>
 <style lang="scss" scoped>
 .days-row {
